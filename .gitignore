@@ -7,6 +7,8 @@
 !/internal/bl/*
 !/intarnal/da/*
 !.gitignore
+!config.yaml
 !go.mod
+!go.sum
 !Makefile
 !README.md
