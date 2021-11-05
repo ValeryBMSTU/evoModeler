@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/ValeryBMSTU/evoModeler/internal/api"
+	"github.com/labstack/echo/v4"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -54,9 +55,12 @@ func main() {
 		log.Fatal()
 	}
 
-	http.HandleFunc("/ping", api.PingHandler)
-	http.HandleFunc("/", api.DoNothingHandler)
+	e := echo.New()
+	e.GET("/ping", api.PingHandler)
+	e.GET("/", api.DoNothingHandler)
 
-	fmt.Println("starting server at " + cfg.Host + ":" + cfg.Port)
-	http.ListenAndServe(cfg.Host+":"+cfg.Port, nil)
+	err = e.Start(cfg.Host + ":" + cfg.Port)
+	if err != http.ErrServerClosed {
+		log.Fatal(err)
+	}
 }

@@ -2,18 +2,20 @@ package api
 
 import (
 	"fmt"
-	"net/http"
+
+	"github.com/labstack/echo/v4"
 )
 
 func DevPrint() {
 	fmt.Println("package 'api' has been attach")
 }
 
-func PingHandler(w http.ResponseWriter, r *http.Request) {
+func PingHandler(c echo.Context) error {
 	fmt.Printf("%s", "Что-то прилетело в PingHandler...")
-	w.Write([]byte("pong"))
+	c.Response().Writer.Write([]byte("pong"))
+	return nil
 }
 
-func DoNothingHandler(w http.ResponseWriter, r *http.Request) {
-	return
+func DoNothingHandler(c echo.Context) error {
+	return nil
 }
