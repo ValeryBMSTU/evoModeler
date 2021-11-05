@@ -2,6 +2,9 @@ package bl
 
 import (
 	"errors"
+	"fmt"
+
+	"github.com/ValeryBMSTU/evoModeler/internal/da"
 )
 
 type id int
@@ -27,10 +30,10 @@ var (
 
 func SingUp(login, pass string) (sessionID int, err error) {
 	if len(login) < 3 {
-		return 0, errors.New("too short login")
+		return -1, errors.New("too short login")
 	}
 	if len(pass) < 6 {
-		return 0, errors.New("too short pass")
+		return -1, errors.New("too short pass")
 	}
 
 	newUser := user{
@@ -39,6 +42,12 @@ func SingUp(login, pass string) (sessionID int, err error) {
 		pass,
 	}
 	users = append(users, newUser)
+
+	err = da.SignUp(login, pass)
+	if err != nil {
+		fmt.Println("can not add user to database")
+		return -1, errors.New("can not add user to database")
+	}
 
 	newSession := session{
 		id(len(sessions) + 1),

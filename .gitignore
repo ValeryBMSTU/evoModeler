@@ -5,7 +5,7 @@
 !/gui/gui.py
 !/internal/api/*
 !/internal/bl/*
-!/intarnal/da/*
+!/internal/da/*
 !.gitignore
 !config.yaml
 !go.mod
