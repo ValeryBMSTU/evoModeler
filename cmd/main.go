@@ -58,6 +58,9 @@ func main() {
 	e := echo.New()
 	e.GET("/ping", api.PingHandler)
 	e.GET("/", api.DoNothingHandler)
+	e.POST("/singup", api.SingUpHandler)
+	e.POST("/login", api.LogInHandler)
+	e.POST("/logout", api.LogOutHandler)
 
 	err = e.Start(cfg.Host + ":" + cfg.Port)
 	if err != http.ErrServerClosed {
