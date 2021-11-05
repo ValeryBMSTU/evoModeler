@@ -1,0 +1,12 @@
+*
+
+!*/
+!/cmd/main.go
+!/gui/gui.py
+!/internal/api/*
+!/internal/bl/*
+!/intarnal/da/*
+!.gitignore
+!go.mod
+!Makefile
+!README.md
