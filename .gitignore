@@ -2,6 +2,7 @@
 
 !*/
 !/cmd/main.go
+!/db/postgreDB.sql
 !/gui/gui.py
 !/internal/api/*
 !/internal/bl/*
