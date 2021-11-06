@@ -27,7 +27,7 @@ func SingUpHandler(ctx echo.Context) error {
 	login := ctx.QueryParam("login")
 	pass := ctx.QueryParam("pass")
 
-	sessionID, err := bl.SingUp(login, pass)
+	sessionID, err := bl.CreateUser(login, pass)
 	if err != nil {
 		return err
 	}
@@ -43,7 +43,7 @@ func LogInHandler(ctx echo.Context) error {
 	login := ctx.QueryParam("login")
 	pass := ctx.QueryParam("pass")
 
-	sessionID, err := bl.LogIn(login, pass)
+	sessionID, err := bl.CreateSession(login, pass)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func LogOutHandler(ctx echo.Context) error {
 		return err
 	}
 
-	err = bl.LogOut(sessionID)
+	err = bl.RemoveSession(sessionID)
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func LogOutHandler(ctx echo.Context) error {
 	}{
 		struct {
 			Status string `json:"status"`
-		}{"rfr"},
+		}{"OK"},
 	}
 
 	return ctx.JSON(http.StatusOK, data)

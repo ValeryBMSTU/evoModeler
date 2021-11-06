@@ -2,7 +2,6 @@ package bl
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/ValeryBMSTU/evoModeler/internal/da"
 )
@@ -23,12 +22,7 @@ type session struct {
 	deleted bool
 }
 
-var (
-	users    []user
-	sessions []session
-)
-
-func SingUp(login, pass string) (sessionID int, err error) {
+func CreateUser(login, pass string) (sessionID int, err error) {
 	if len(login) < 3 {
 		return -1, errors.New("too short login")
 	}
@@ -36,58 +30,39 @@ func SingUp(login, pass string) (sessionID int, err error) {
 		return -1, errors.New("too short pass")
 	}
 
-	newUser := user{
-		id(len(users) + 1),
-		login,
-		pass,
-	}
-	users = append(users, newUser)
-
-	err = da.SignUp(login, pass)
+	userID, err := da.InsertUser(login, pass)
 	if err != nil {
-		fmt.Println("can not add user to database")
-		return -1, errors.New("can not add user to database")
+		return -1, err
 	}
 
-	newSession := session{
-		id(len(sessions) + 1),
-		newUser.id,
-		false,
+	sessionID, err = da.InsertSession(userID)
+	if err != nil {
+		return -1, err
 	}
-	sessions = append(sessions, newSession)
 
-	return int(newSession.id), nil
+	return sessionID, nil
 }
 
-func LogIn(login, pass string) (sessionID int, err error) {
-	userID := id(-1)
-	for _, user := range users {
-		if user.login == login && user.pass == pass {
-			userID = user.id
-			break
-		}
-	}
-	if userID == id(-1) {
-		return -1, errors.New("undefined user")
+func CreateSession(login, pass string) (sessionID int, err error) {
+
+	userID, err := da.SelectUser(login, pass)
+	if err != nil {
+		return -1, err
 	}
 
-	newSession := session{
-		id(len(sessions) + 1),
-		userID,
-		false,
+	sessionID, err = da.InsertSession(userID)
+	if err != nil {
+		return -1, err
 	}
-	sessions = append(sessions, newSession)
 
-	return int(newSession.id), nil
+	return sessionID, nil
 }
 
-func LogOut(sessionID int) (err error) {
-	for idx, session := range sessions {
-		if session.id == id(sessionID) {
-			sessions[idx].deleted = true
-			return nil
-		}
+func RemoveSession(sessionID int) (err error) {
+	err = da.DeleteSession(sessionID)
+	if err != nil {
+		return err
 	}
 
-	return errors.New("undefined session")
+	return nil
 }

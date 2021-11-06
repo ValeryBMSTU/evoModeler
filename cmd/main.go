@@ -60,7 +60,7 @@ func main() {
 	e.GET("/", api.DoNothingHandler)
 	e.POST("/singup", api.SingUpHandler)
 	e.POST("/login", api.LogInHandler)
-	e.POST("/logout", api.LogOutHandler)
+	e.DELETE("/logout", api.LogOutHandler)
 
 	err = e.Start(cfg.Host + ":" + cfg.Port)
 	if err != http.ErrServerClosed {
