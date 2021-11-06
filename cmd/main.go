@@ -62,7 +62,7 @@ func main() {
 	e.POST("/login", api.LogInHandler)
 	e.DELETE("/logout", api.LogOutHandler)
 
-	err = e.Start(cfg.Host + ":" + cfg.Port)
+	err = e.Start(":" + cfg.Port)
 	if err != http.ErrServerClosed {
 		log.Fatal(err)
 	}

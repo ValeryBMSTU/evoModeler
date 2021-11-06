@@ -8,6 +8,7 @@
 !/internal/da/*
 !.gitignore
 !config.yaml
+!Dockerfile
 !go.mod
 !go.sum
 !Makefile
