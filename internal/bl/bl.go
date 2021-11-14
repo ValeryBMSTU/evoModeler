@@ -10,7 +10,7 @@ type sessionToken int
 
 type DA interface {
 	InsertUser(login, pass string) (userID int, err error)
-	InsertSession(userID int) (seesionID int, err error)
+	InsertSession(userID int) (sessionID int, err error)
 	DeleteSession(sessionID int) (err error)
 	SelectUser(login, pass string) (userID int, err error)
 }

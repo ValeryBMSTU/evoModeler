@@ -22,17 +22,17 @@ func DevPrint() {
 	fmt.Println("package 'api' has been attach")
 }
 
-func (api *Api) PingHandler(ctx echo.Context) error {
+func (api *Api) PingHandler(ctx echo.Context) (err error) {
 	fmt.Printf("%s", "Что-то прилетело в PingHandler...")
 	ctx.Response().Writer.Write([]byte("pong"))
 	return nil
 }
 
-func (api *Api) DoNothingHandler(ctx echo.Context) error {
+func (api *Api) DoNothingHandler(ctx echo.Context) (err error) {
 	return nil
 }
 
-func (api *Api) SingUpHandler(ctx echo.Context) error {
+func (api *Api) SingUpHandler(ctx echo.Context) (err error) {
 	login := ctx.QueryParam("login")
 	pass := ctx.QueryParam("pass")
 
@@ -48,7 +48,7 @@ func (api *Api) SingUpHandler(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, data)
 }
 
-func (api *Api) LogInHandler(ctx echo.Context) error {
+func (api *Api) LogInHandler(ctx echo.Context) (err error) {
 	login := ctx.QueryParam("login")
 	pass := ctx.QueryParam("pass")
 
@@ -64,7 +64,7 @@ func (api *Api) LogInHandler(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, data)
 }
 
-func (api *Api) LogOutHandler(ctx echo.Context) error {
+func (api *Api) LogOutHandler(ctx echo.Context) (err error) {
 	sessionID, err := strconv.Atoi(ctx.QueryParam("session_id"))
 	if err != nil {
 		return err
@@ -90,9 +90,4 @@ func (api *Api) LogOutHandler(ctx echo.Context) error {
 
 func CreateApi(bl BL) (newApi *Api, err error) {
 	return &Api{bl}, nil
-	//e.GET("/ping", PingHandler)
-	//e.GET("/", newApi.DoNothingHandler)
-	//e.POST("/singup", newApi.SingUpHandler)
-	//e.POST("/login", api.LogInHandler)
-	//e.DELETE("/logout", api.LogOutHandler)
 }

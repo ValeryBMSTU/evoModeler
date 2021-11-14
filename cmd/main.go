@@ -31,8 +31,7 @@ type App struct {
 	Api *echo.Echo
 }
 
-func ParseFlags() (string, error) {
-	var configPath string
+func ParseFlags() (configPath string, err error) {
 	flag.StringVar(&configPath, "config", "./config.yaml", "path to config file")
 	flag.Parse()
 	fmt.Println(configPath)

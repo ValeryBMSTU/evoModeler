@@ -51,7 +51,7 @@ func (da *Da) InsertUser(login, pass string) (userID int, err error) {
 	return lastInserID, err
 }
 
-func (da *Da) InsertSession(userID int) (seesionID int, err error) {
+func (da *Da) InsertSession(userID int) (sessionID int, err error) {
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		fmt.Println("can not connect to database")
@@ -71,7 +71,7 @@ func (da *Da) InsertSession(userID int) (seesionID int, err error) {
 	return lastInserID, nil
 }
 
-func (da *Da) DeleteSession(sessionID int) error {
+func (da *Da) DeleteSession(sessionID int) (err error) {
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		fmt.Println("can not connect to database")
