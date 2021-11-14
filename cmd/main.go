@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/ValeryBMSTU/evoModeler/internal/bl"
+	"github.com/ValeryBMSTU/evoModeler/internal/da"
 	"log"
 	"net/http"
 	"os"
@@ -15,6 +17,18 @@ import (
 type Config struct {
 	Host string `yaml1:"host"`
 	Port string `yaml1:"port"`
+}
+
+type API interface {
+	PingHandler(ctx echo.Context) (err error)
+	DoNothingHandler(ctx echo.Context) (err error)
+	SingUpHandler(ctx echo.Context) (err error)
+	LogInHandler(ctx echo.Context) (err error)
+	LogOutHandler(ctx echo.Context) (err error)
+}
+
+type App struct {
+	Api *echo.Echo
 }
 
 func ParseFlags() (string, error) {
@@ -42,6 +56,16 @@ func NewConfig(configPath string) (*Config, error) {
 	return config, nil
 }
 
+func CreateEchoServer(api API) (server *echo.Echo, err error) {
+	e := echo.New()
+	e.GET("/ping", api.PingHandler)
+	e.GET("/", api.DoNothingHandler)
+	e.POST("/singup", api.SingUpHandler)
+	e.POST("/login", api.LogInHandler)
+	e.DELETE("/logout", api.LogOutHandler)
+	return e, nil
+}
+
 func main() {
 	api.DevPrint()
 
@@ -52,17 +76,27 @@ func main() {
 
 	cfg, err := NewConfig(cfgPath)
 	if err != nil {
-		log.Fatal()
+		log.Fatal(err)
 	}
 
-	e := echo.New()
-	e.GET("/ping", api.PingHandler)
-	e.GET("/", api.DoNothingHandler)
-	e.POST("/singup", api.SingUpHandler)
-	e.POST("/login", api.LogInHandler)
-	e.DELETE("/logout", api.LogOutHandler)
+	da, err := da.CreateDa()
+	if err != nil {
+		log.Fatal(err)
+	}
+	bl, err := bl.CreateBl(da)
+	if err != nil {
+		log.Fatal(err)
+	}
+	api, err := api.CreateApi(bl)
+	if err != nil {
+		log.Fatal(err)
+	}
+	server, err := CreateEchoServer(api)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	err = e.Start(":" + cfg.Port)
+	err = server.Start(":" + cfg.Port)
 	if err != http.ErrServerClosed {
 		log.Fatal(err)
 	}

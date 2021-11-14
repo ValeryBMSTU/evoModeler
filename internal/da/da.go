@@ -24,7 +24,15 @@ const (
 
 var connStr string = "user=" + user + " password=" + password + " dbname=" + dbname + " sslmode=disable"
 
-func InsertUser(login, pass string) (userID int, err error) {
+type Da struct {
+	connStr string
+}
+
+func CreateDa () (da *Da, err error) {
+	return &Da{connStr: connStr}, nil
+}
+
+func (da *Da) InsertUser(login, pass string) (userID int, err error) {
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		fmt.Println("can not connect to database")
@@ -43,7 +51,7 @@ func InsertUser(login, pass string) (userID int, err error) {
 	return lastInserID, err
 }
 
-func InsertSession(userID int) (seesionID int, err error) {
+func (da *Da) InsertSession(userID int) (seesionID int, err error) {
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		fmt.Println("can not connect to database")
@@ -63,7 +71,7 @@ func InsertSession(userID int) (seesionID int, err error) {
 	return lastInserID, nil
 }
 
-func DeleteSession(sessionID int) error {
+func (da *Da) DeleteSession(sessionID int) error {
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		fmt.Println("can not connect to database")
@@ -80,7 +88,7 @@ func DeleteSession(sessionID int) error {
 	return nil
 }
 
-func SelectUser(login, pass string) (userID int, err error) {
+func (da *Da) SelectUser(login, pass string) (userID int, err error) {
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		fmt.Println("can not connect to database")

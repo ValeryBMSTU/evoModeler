@@ -1,6 +1,5 @@
 *
 
-!*/
 !/cmd/main.go
 !/db/postgreDB.sql
 !/gui/gui.py

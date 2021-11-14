@@ -5,29 +5,38 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/ValeryBMSTU/evoModeler/internal/bl"
 	"github.com/labstack/echo/v4"
 )
+
+type BL interface {
+	CreateUser(login, pass string) (sessionID int, err error)
+	CreateSession(login, pass string) (sessionID int, err error)
+	RemoveSession(sessionID int) (err error)
+}
+
+type Api struct {
+	Bl BL
+}
 
 func DevPrint() {
 	fmt.Println("package 'api' has been attach")
 }
 
-func PingHandler(ctx echo.Context) error {
+func (api *Api) PingHandler(ctx echo.Context) error {
 	fmt.Printf("%s", "Что-то прилетело в PingHandler...")
 	ctx.Response().Writer.Write([]byte("pong"))
 	return nil
 }
 
-func DoNothingHandler(ctx echo.Context) error {
+func (api *Api) DoNothingHandler(ctx echo.Context) error {
 	return nil
 }
 
-func SingUpHandler(ctx echo.Context) error {
+func (api *Api) SingUpHandler(ctx echo.Context) error {
 	login := ctx.QueryParam("login")
 	pass := ctx.QueryParam("pass")
 
-	sessionID, err := bl.CreateUser(login, pass)
+	sessionID, err := api.Bl.CreateUser(login, pass)
 	if err != nil {
 		return err
 	}
@@ -39,11 +48,11 @@ func SingUpHandler(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, data)
 }
 
-func LogInHandler(ctx echo.Context) error {
+func (api *Api) LogInHandler(ctx echo.Context) error {
 	login := ctx.QueryParam("login")
 	pass := ctx.QueryParam("pass")
 
-	sessionID, err := bl.CreateSession(login, pass)
+	sessionID, err := api.Bl.CreateSession(login, pass)
 	if err != nil {
 		return err
 	}
@@ -55,13 +64,13 @@ func LogInHandler(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, data)
 }
 
-func LogOutHandler(ctx echo.Context) error {
+func (api *Api) LogOutHandler(ctx echo.Context) error {
 	sessionID, err := strconv.Atoi(ctx.QueryParam("session_id"))
 	if err != nil {
 		return err
 	}
 
-	err = bl.RemoveSession(sessionID)
+	err = api.Bl.RemoveSession(sessionID)
 	if err != nil {
 		return err
 	}
@@ -77,4 +86,13 @@ func LogOutHandler(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, data)
+}
+
+func CreateApi(bl BL) (newApi *Api, err error) {
+	return &Api{bl}, nil
+	//e.GET("/ping", PingHandler)
+	//e.GET("/", newApi.DoNothingHandler)
+	//e.POST("/singup", newApi.SingUpHandler)
+	//e.POST("/login", api.LogInHandler)
+	//e.DELETE("/logout", api.LogOutHandler)
 }

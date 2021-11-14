@@ -2,13 +2,22 @@ package bl
 
 import (
 	"errors"
-
-	"github.com/ValeryBMSTU/evoModeler/internal/da"
 )
 
 type id int
 
 type sessionToken int
+
+type DA interface {
+	InsertUser(login, pass string) (userID int, err error)
+	InsertSession(userID int) (seesionID int, err error)
+	DeleteSession(sessionID int) (err error)
+	SelectUser(login, pass string) (userID int, err error)
+}
+
+type Bl struct {
+	Da DA
+}
 
 type user struct {
 	id    id
@@ -22,7 +31,11 @@ type session struct {
 	deleted bool
 }
 
-func CreateUser(login, pass string) (sessionID int, err error) {
+func CreateBl(da DA) (bl *Bl, err error) {
+	return &Bl{da}, nil
+}
+
+func (bl *Bl) CreateUser(login, pass string) (sessionID int, err error) {
 	if len(login) < 3 {
 		return -1, errors.New("too short login")
 	}
@@ -30,27 +43,12 @@ func CreateUser(login, pass string) (sessionID int, err error) {
 		return -1, errors.New("too short pass")
 	}
 
-	userID, err := da.InsertUser(login, pass)
+	userID, err := bl.Da.InsertUser(login, pass)
 	if err != nil {
 		return -1, err
 	}
 
-	sessionID, err = da.InsertSession(userID)
-	if err != nil {
-		return -1, err
-	}
-
-	return sessionID, nil
-}
-
-func CreateSession(login, pass string) (sessionID int, err error) {
-
-	userID, err := da.SelectUser(login, pass)
-	if err != nil {
-		return -1, err
-	}
-
-	sessionID, err = da.InsertSession(userID)
+	sessionID, err = bl.Da.InsertSession(userID)
 	if err != nil {
 		return -1, err
 	}
@@ -58,8 +56,23 @@ func CreateSession(login, pass string) (sessionID int, err error) {
 	return sessionID, nil
 }
 
-func RemoveSession(sessionID int) (err error) {
-	err = da.DeleteSession(sessionID)
+func (bl *Bl) CreateSession(login, pass string) (sessionID int, err error) {
+
+	userID, err := bl.Da.SelectUser(login, pass)
+	if err != nil {
+		return -1, err
+	}
+
+	sessionID, err = bl.Da.InsertSession(userID)
+	if err != nil {
+		return -1, err
+	}
+
+	return sessionID, nil
+}
+
+func (bl *Bl) RemoveSession(sessionID int) (err error) {
+	err = bl.Da.DeleteSession(sessionID)
 	if err != nil {
 		return err
 	}
