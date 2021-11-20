@@ -36,27 +36,25 @@ type CustomMiddlewares struct {
 
 func (m *CustomMiddlewares) AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
+		path := ctx.Path()
+		if path != "/login" && path != "/singup" && path != "/logout" {
+			strSessionID, err := ctx.Cookie("session_id")
+			if err != nil {
+				return err
+			}
+			sessionID, err := strconv.Atoi(strSessionID.Value)
+
+			isExist, err := m.BL.CheckSession(sessionID)
+			if !isExist {
+				return errors.New("session does not exist")
+			}
+			if err != nil {
+				return err
+			}
+		}
+
 		if err := next(ctx); err != nil {
 			ctx.Error(err)
-		}
-
-		path := ctx.Path()
-		if path == "/login" || path == "/singup" || path == "/logout" {
-			return nil
-		}
-
-		strSessionID, err := ctx.Cookie("session_id")
-		if err != nil {
-			return err
-		}
-		sessionID, err := strconv.Atoi(strSessionID.Value)
-
-		isExist, err := m.BL.CheckSession(sessionID)
-		if !isExist {
-			return errors.New("session does not exist")
-		}
-		if err != nil {
-			return err
 		}
 
 		return nil
