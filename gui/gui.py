@@ -39,9 +39,10 @@ while True:
         else:
             resp = requests.get(url)
             
-        
+        print(resp.json())
         mainWindow["-LOG-"].update(mainWindow["-LOG-"].get()+"\n"+\
-            str(resp.status_code)+\
+            str(resp.status_code)+" "+\
             str(resp.json()))
+
 
 

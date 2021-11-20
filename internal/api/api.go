@@ -18,18 +18,38 @@ type Api struct {
 	Bl BL
 }
 
+type RespFormat struct {
+	Data interface{} `json:"data"`
+	Meta Meta`json:"meta"`
+}
+
+type Meta struct {
+	Info string `json:"info"`
+	Err string `json:"err"`
+}
+
 func DevPrint() {
 	fmt.Println("package 'api' has been attach")
 }
 
 func (api *Api) PingHandler(ctx echo.Context) (err error) {
 	fmt.Printf("%s", "Что-то прилетело в PingHandler...")
-	ctx.Response().Writer.Write([]byte("pong"))
-	return nil
+
+	resp := &RespFormat {
+		Data: struct {Pong string `json:"pong"`}{"pong"},
+		Meta: Meta{"OK", ""},
+	}
+
+	return ctx.JSON(http.StatusOK, resp)
 }
 
 func (api *Api) DoNothingHandler(ctx echo.Context) (err error) {
-	return nil
+	resp := &RespFormat {
+		Data: nil,
+		Meta: Meta{"OK", ""},
+	}
+
+	return ctx.JSON(http.StatusOK, resp)
 }
 
 func (api *Api) SingUpHandler(ctx echo.Context) (err error) {
@@ -41,11 +61,12 @@ func (api *Api) SingUpHandler(ctx echo.Context) (err error) {
 		return err
 	}
 
-	data := &struct {
-		SessionID int `json:"session_id"`
-	}{sessionID}
+	resp := &RespFormat {
+		Data: struct {SessionID int `json:"session_id"`}{sessionID},
+		Meta: Meta{"OK", ""},
+	}
 
-	return ctx.JSON(http.StatusOK, data)
+	return ctx.JSON(http.StatusOK, resp)
 }
 
 func (api *Api) LogInHandler(ctx echo.Context) (err error) {
@@ -57,11 +78,12 @@ func (api *Api) LogInHandler(ctx echo.Context) (err error) {
 		return err
 	}
 
-	data := &struct {
-		SessionID int `json:"session_id"`
-	}{sessionID}
+	resp := &RespFormat {
+		Data: struct {SessionID int `json:"session_id"`}{sessionID},
+		Meta: Meta{"OK", ""},
+	}
 
-	return ctx.JSON(http.StatusOK, data)
+	return ctx.JSON(http.StatusOK, resp)
 }
 
 func (api *Api) LogOutHandler(ctx echo.Context) (err error) {
@@ -75,17 +97,12 @@ func (api *Api) LogOutHandler(ctx echo.Context) (err error) {
 		return err
 	}
 
-	data := &struct {
-		Meta struct {
-			Status string `json:"status"`
-		} `json:"meta"`
-	}{
-		struct {
-			Status string `json:"status"`
-		}{"OK"},
+	resp := &RespFormat {
+		Data: nil,
+		Meta: Meta{"OK", ""},
 	}
 
-	return ctx.JSON(http.StatusOK, data)
+	return ctx.JSON(http.StatusOK, resp)
 }
 
 func CreateApi(bl BL) (newApi *Api, err error) {
