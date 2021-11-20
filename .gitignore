@@ -1,11 +1,18 @@
 *
 
+!/cmd
 !/cmd/main.go
+!/db
 !/db/postgreDB.sql
+!/gui
 !/gui/gui.py
+!/internal
+!/internal/api
 !/internal/api/*
+!/internal/bl
 !/internal/bl/*
-!/internal/da/*
+!/internalda/
+!/internal/da/da.go
 !.gitignore
 !config.yaml
 !Dockerfile

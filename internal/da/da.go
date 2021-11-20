@@ -17,7 +17,7 @@ const (
 	insertUserQuery    = `insert into "User" (login, pass) values ($1, $2) returning id`
 	insertSessionQuery = `insert into "Session" (id_user, is_deleted) values ($1, $2) returning id`
 
-	selectUserQuery = `SELECT id, login, pass FROM "User" WHERE login=$1, pass=$2`
+	selectUserQuery = `SELECT id, login, pass FROM "User" WHERE login=$1 and pass=$2`
 
 	deleteSessionQuery = `UPDATE "Session" SET is_deleted=true WHERE id = $1`
 )
@@ -96,7 +96,8 @@ func (da *Da) SelectUser(login, pass string) (userID int, err error) {
 	}
 	defer db.Close()
 
-	err = db.QueryRow(selectUserQuery, userID, false).Scan(&userID)
+	var uLogin, uPass string
+	err = db.QueryRow(selectUserQuery, login, pass).Scan(&userID, &uLogin, &uPass)
 	if err != nil {
 		fmt.Println(err)
 		return -1, err

@@ -19,18 +19,6 @@ type Bl struct {
 	Da DA
 }
 
-type user struct {
-	id    id
-	login string
-	pass  string
-}
-
-type session struct {
-	id      id
-	userID  id
-	deleted bool
-}
-
 func CreateBl(da DA) (bl *Bl, err error) {
 	return &Bl{da}, nil
 }
