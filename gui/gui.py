@@ -147,9 +147,13 @@ def createWindowProcess():
             print("Closing create window....")
             break
         elif event == "-CREATE-": # заглушка
-            createWindow.close()
-            print("Closing create window....")
-            break
+            url = state.server.address + "create?task_name=" + createWindow["-NAME-"].get() + "&task_type=" + createWindow["-TYPE-"].get()
+            print(url)
+            resp = requests.post(url, cookies={"session_id": str(state.user.sessionID)})
+            if resp.json()["meta"]["info"] == "OK":
+                break
+            else:
+                print(resp.json()["meta"]["err"])
 
 state = State(False, -1, "http://127.0.0.1:8080/")
 authWindow = makeAuthWindow()

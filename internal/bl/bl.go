@@ -13,6 +13,7 @@ type DA interface {
 	InsertSession(userID int) (sessionID int, err error)
 	DeleteSession(sessionID int) (err error)
 	SelectUser(login, pass string) (userID int, err error)
+	SelectSession(sessionID int) (id int, idUser int, isDeleted bool, err error)
 }
 
 type Bl struct {
@@ -66,4 +67,13 @@ func (bl *Bl) RemoveSession(sessionID int) (err error) {
 	}
 
 	return nil
+}
+
+func (bl *Bl) CheckSession(sessionID int) (isExist bool, err error) {
+	_, _, _, err = bl.Da.SelectSession(sessionID)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }

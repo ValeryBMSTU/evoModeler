@@ -25,6 +25,7 @@ type API interface {
 	SingUpHandler(ctx echo.Context) (err error)
 	LogInHandler(ctx echo.Context) (err error)
 	LogOutHandler(ctx echo.Context) (err error)
+	CreateTaskHandler(ctx echo.Context) (err error)
 }
 
 type App struct {
@@ -62,6 +63,7 @@ func CreateEchoServer(api API) (server *echo.Echo, err error) {
 	e.POST("/singup", api.SingUpHandler)
 	e.POST("/login", api.LogInHandler)
 	e.DELETE("/logout", api.LogOutHandler)
+	e.POST("/create", api.CreateTaskHandler)
 	return e, nil
 }
 
@@ -78,22 +80,28 @@ func main() {
 		log.Fatal(err)
 	}
 
-	da, err := da.CreateDa()
+	serverDa, err := da.CreateDa()
 	if err != nil {
 		log.Fatal(err)
 	}
-	bl, err := bl.CreateBl(da)
+	serverBl, err := bl.CreateBl(serverDa)
 	if err != nil {
 		log.Fatal(err)
 	}
-	api, err := api.CreateApi(bl)
+	serverApi, err := api.CreateApi(serverBl)
 	if err != nil {
 		log.Fatal(err)
 	}
-	server, err := CreateEchoServer(api)
+	server, err := CreateEchoServer(serverApi)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	mw, err := api.CreateCustomMiddlewares(serverBl)
+	if err != nil {
+		log.Fatal(err)
+	}
+	server.Use(mw.AuthMiddleware)
 
 	err = server.Start(":" + cfg.Port)
 	if err != http.ErrServerClosed {

@@ -18,6 +18,7 @@ const (
 	insertSessionQuery = `insert into "Session" (id_user, is_deleted) values ($1, $2) returning id`
 
 	selectUserQuery = `SELECT id, login, pass FROM "User" WHERE login=$1 and pass=$2`
+	selectSessionByIDQuery = `SELECT id, id_user, is_deleted FROM "Session" WHERE id=$1`
 
 	deleteSessionQuery = `UPDATE "Session" SET is_deleted=true WHERE id = $1`
 )
@@ -46,7 +47,6 @@ func (da *Da) InsertUser(login, pass string) (userID int, err error) {
 		fmt.Println(err)
 		return -1, err
 	}
-	fmt.Println(lastInserID)
 
 	return lastInserID, err
 }
@@ -66,7 +66,6 @@ func (da *Da) InsertSession(userID int) (sessionID int, err error) {
 		fmt.Println(err)
 		return -1, err
 	}
-	fmt.Println(lastInserID)
 
 	return lastInserID, nil
 }
@@ -102,7 +101,23 @@ func (da *Da) SelectUser(login, pass string) (userID int, err error) {
 		fmt.Println(err)
 		return -1, err
 	}
-	fmt.Println(userID)
 
 	return userID, nil
+}
+
+func (da *Da) SelectSession(sessionID int) (id int, idUser int, isDeleted bool, err error) {
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		fmt.Println("can not connect to database")
+		return -1, -1, false, err
+	}
+	defer db.Close()
+
+	err = db.QueryRow(selectSessionByIDQuery, sessionID).Scan(&id, &idUser, &isDeleted)
+	if err != nil {
+		fmt.Println(err)
+		return -1, -1, false, err
+	}
+
+	return id, idUser, isDeleted, nil
 }
