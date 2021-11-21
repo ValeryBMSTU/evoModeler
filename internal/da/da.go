@@ -3,6 +3,7 @@ package da
 import (
 	"database/sql"
 	"fmt"
+	"github.com/ValeryBMSTU/evoModeler/internal/domain"
 
 	_ "github.com/lib/pq"
 )
@@ -18,7 +19,11 @@ const (
 	insertSessionQuery = `insert into "Session" (id_user, is_deleted) values ($1, $2) returning id`
 
 	selectUserQuery = `SELECT id, login, pass FROM "User" WHERE login=$1 and pass=$2`
+	selectUserByIDQuery = `SELECT id, login, pass FROM "User" WHERE id=$1`
 	selectSessionByIDQuery = `SELECT id, id_user, is_deleted FROM "Session" WHERE id=$1`
+	selectSolversQuery = `SELECT id, name, description, model FROM "Solver"`
+	selectSolverBySolverNameQuery = `SELECT id, name, description, model FROM "Solver" WHERE name=$1`
+	selectIssuesQuery = `SELECT id, name, description FROM "Issue"`
 
 	deleteSessionQuery = `UPDATE "Session" SET is_deleted=true WHERE id = $1`
 )
@@ -105,6 +110,23 @@ func (da *Da) SelectUser(login, pass string) (userID int, err error) {
 	return userID, nil
 }
 
+func (da *Da ) SelectUserByID(userID int) (user domain.User, err error) {
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		fmt.Println("can not connect to database")
+		return user, err
+	}
+	defer db.Close()
+
+	err = db.QueryRow(selectUserByIDQuery, userID).Scan(&user.ID, &user.Login, &user.Pass)
+	if err != nil {
+		fmt.Println(err)
+		return user, err
+	}
+
+	return user, nil
+}
+
 func (da *Da) SelectSession(sessionID int) (id int, idUser int, isDeleted bool, err error) {
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
@@ -120,4 +142,87 @@ func (da *Da) SelectSession(sessionID int) (id int, idUser int, isDeleted bool, 
 	}
 
 	return id, idUser, isDeleted, nil
+}
+
+func (da *Da) SelectSolver(solverName string) (solver domain.Solver, err error) {
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		fmt.Println("can not connect to database")
+		return solver, err
+	}
+	defer db.Close()
+
+	err = db.QueryRow(selectSolverBySolverNameQuery, solverName).Scan(
+		&solver.ID,
+		&solver.Name,
+		&solver.Description,
+		&solver.Model)
+	if err != nil {
+		return solver, err
+	}
+
+	return solver, nil
+}
+
+func (da *Da) SelectIssues() (issues []domain.Issue, err error) {
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		fmt.Println("can not connect to database")
+		return issues, err
+	}
+	defer db.Close()
+
+	rows, err := db.Query(selectIssuesQuery)
+	if err != nil {
+		return issues, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var issue domain.Issue
+		if err := rows.Scan(
+			&issue.ID,
+			&issue.Name,
+			&issue.Description); err != nil {
+			return issues, err
+		}
+		issues = append(issues, issue)
+	}
+	if err = rows.Err(); err != nil {
+		return issues, err
+	}
+
+	return issues, nil
+}
+
+func (da *Da) SelectSolvers() (solvers []domain.Solver, err error) {
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		fmt.Println("can not connect to database")
+		return solvers, err
+	}
+	defer db.Close()
+
+	rows, err := db.Query(selectSolversQuery)
+	if err != nil {
+		return solvers, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var solver domain.Solver
+		if err := rows.Scan(
+			&solver.ID,
+			&solver.Name,
+			&solver.Description,
+			&solver.Model); err != nil {
+			return solvers, err
+		}
+		solvers = append(solvers, solver)
+	}
+	if err = rows.Err(); err != nil {
+		return solvers, err
+	}
+
+	return solvers, nil
 }

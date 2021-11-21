@@ -11,8 +11,10 @@
 !/internal/api/*
 !/internal/bl
 !/internal/bl/*
-!/internalda/
-!/internal/da/da.go
+!/internal/da
+!/internal/da/*
+!/internal/domain
+!/internal/domain/*
 !.gitignore
 !config.yaml
 !Dockerfile

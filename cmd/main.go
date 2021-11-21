@@ -26,6 +26,8 @@ type API interface {
 	LogInHandler(ctx echo.Context) (err error)
 	LogOutHandler(ctx echo.Context) (err error)
 	CreateTaskHandler(ctx echo.Context) (err error)
+	GetIssuesHandler(ctx echo.Context) (err error)
+	GetSolversHandler(ctx echo.Context) (err error)
 }
 
 type App struct {
@@ -64,6 +66,8 @@ func CreateEchoServer(api API) (server *echo.Echo, err error) {
 	e.POST("/login", api.LogInHandler)
 	e.DELETE("/logout", api.LogOutHandler)
 	e.POST("/create", api.CreateTaskHandler)
+	e.GET("/issue/list", api.GetIssuesHandler)
+	e.GET("/solver/list", api.GetSolversHandler)
 	return e, nil
 }
 
@@ -101,6 +105,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	server.Use(mw.ErrorMiddleware)
 	server.Use(mw.AuthMiddleware)
 
 	err = server.Start(":" + cfg.Port)

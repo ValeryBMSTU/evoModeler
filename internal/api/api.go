@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/ValeryBMSTU/evoModeler/internal/domain"
 	"github.com/labstack/echo/v4"
 )
 
@@ -14,6 +15,12 @@ type BL interface {
 	CreateSession(login, pass string) (sessionID int, err error)
 	RemoveSession(sessionID int) (err error)
 	CheckSession(sessionID int) (isExist bool, err error)
+	TakeUser(sessionID int) (user domain.User, err error)
+	TakeSession(userID int) (session domain.Session, err error)
+	CreateTask(taskName, solverName, genAlgName string, user domain.User) (task domain.Task, err error)
+	TakeSolver(solverName string) (solver domain.Solver, err error)
+	TakeSolvers() (solver []domain.Solver, err error)
+	TakeIssues() (issues []domain.Issue, err error)
 }
 
 type Api struct {
@@ -51,10 +58,41 @@ func (m *CustomMiddlewares) AuthMiddleware(next echo.HandlerFunc) echo.HandlerFu
 			if err != nil {
 				return err
 			}
+
+			session, err := m.BL.TakeSession(sessionID)
+			if err != nil {
+				return err
+			}
+
+			user, err := m.BL.TakeUser(session.UserID)
+			if err != nil {
+				return err
+			}
+
+			ctx.Set("session", session)
+			ctx.Set("user", user)
 		}
 
 		if err := next(ctx); err != nil {
-			ctx.Error(err)
+			return err
+		}
+
+		return nil
+	}
+}
+
+func (m *CustomMiddlewares) ErrorMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(ctx echo.Context) error {
+
+		if err := next(ctx); err != nil {
+			ctx.Logger().Error(err)
+
+			resp := &RespFormat {
+				Data: nil,
+				Meta: Meta{"OK", err.Error()},
+			}
+
+			return ctx.JSON(http.StatusInternalServerError, resp)
 		}
 
 		return nil
@@ -63,6 +101,20 @@ func (m *CustomMiddlewares) AuthMiddleware(next echo.HandlerFunc) echo.HandlerFu
 
 func DevPrint() {
 	fmt.Println("package 'api' has been attach")
+}
+
+func (api *Api) CheckAuth(ctx echo.Context) (err error) {
+	_, ok := ctx.Get("user").(domain.User)
+	if !ok {
+		return errors.New("can not get user info")
+	}
+
+	_, ok = ctx.Get("session").(domain.User)
+	if !ok {
+		return errors.New("can not get session info")
+	}
+
+	return nil
 }
 
 func (api *Api) PingHandler(ctx echo.Context) (err error) {
@@ -140,16 +192,62 @@ func (api *Api) LogOutHandler(ctx echo.Context) (err error) {
 
 func (api *Api) CreateTaskHandler(ctx echo.Context) (err error) {
 	taskName := ctx.QueryParam("task_name")
-	taskType := ctx.QueryParam("task_type")
+	solverName := ctx.QueryParam("solver_name")
+	genAlgName := ctx.QueryParam("gen_alg_name")
 
-	if taskName == "" || taskType == "" {
+	if taskName == "" || solverName == "" || genAlgName == "" {
 		return errors.New("missing param in 'CreateTaskHandler' endpoint")
 	}
 
-	// заглушка
+	user, ok := ctx.Get("user").(domain.User)
+	if !ok {
+		return errors.New("can not get user info")
+	}
+	_, ok = ctx.Get("session").(domain.Session)
+	if !ok {
+		return errors.New("can not get session info")
+	}
+
+	//taskType, err := api.Bl.TakeTaskType(taskTypeName)
+	//if err != nil {
+	//	return err
+	//}
+
+	task, err := api.Bl.CreateTask(taskName, solverName, genAlgName, user)
+	if err != nil {
+		return err
+	}
 
 	resp := &RespFormat {
-		Data: nil,
+		Data: task,
+		Meta: Meta{"OK", ""},
+	}
+
+	return ctx.JSON(http.StatusOK, resp)
+}
+
+func (api *Api) GetSolversHandler(ctx echo.Context) (err error) {
+	solvers, err := api.Bl.TakeSolvers()
+	if err != nil {
+		return err
+	}
+
+	resp := &RespFormat {
+		Data: solvers,
+		Meta: Meta{"OK", ""},
+	}
+
+	return ctx.JSON(http.StatusOK, resp)
+}
+
+func (api *Api) GetIssuesHandler(ctx echo.Context) (err error) {
+	issues, err := api.Bl.TakeIssues()
+	if err != nil {
+		return err
+	}
+
+	resp := &RespFormat {
+		Data: issues,
 		Meta: Meta{"OK", ""},
 	}
 

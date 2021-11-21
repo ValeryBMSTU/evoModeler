@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 10.18 (Ubuntu 10.18-0ubuntu0.18.04.1)
--- Dumped by pg_dump version 10.18 (Ubuntu 10.18-0ubuntu0.18.04.1)
+-- Dumped from database version 10.19 (Ubuntu 10.19-0ubuntu0.18.04.1)
+-- Dumped by pg_dump version 10.19 (Ubuntu 10.19-0ubuntu0.18.04.1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -217,33 +217,30 @@ CREATE TABLE public."GeneticAlgorithm" (
     name text NOT NULL,
     create_date date NOT NULL,
     description text,
-    config text,
-    "id_KO" integer,
-    "id_SO" integer,
-    "id_MO" integer
+    config text
 );
 
 
 ALTER TABLE public."GeneticAlgorithm" OWNER TO postgres;
 
 --
--- Name: KrossingoverOperator; Type: TABLE; Schema: public; Owner: postgres
+-- Name: Issue; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public."KrossingoverOperator" (
+CREATE TABLE public."Issue" (
     id integer NOT NULL,
-    scheme text NOT NULL,
-    params text
+    name character varying NOT NULL,
+    description text
 );
 
 
-ALTER TABLE public."KrossingoverOperator" OWNER TO postgres;
+ALTER TABLE public."Issue" OWNER TO postgres;
 
 --
--- Name: KrossingoverOperator_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: Issue_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public."KrossingoverOperator_id_seq"
+CREATE SEQUENCE public."Issue_id_seq"
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -252,64 +249,14 @@ CREATE SEQUENCE public."KrossingoverOperator_id_seq"
     CACHE 1;
 
 
-ALTER TABLE public."KrossingoverOperator_id_seq" OWNER TO postgres;
+ALTER TABLE public."Issue_id_seq" OWNER TO postgres;
 
 --
--- Name: KrossingoverOperator_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: Issue_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE public."KrossingoverOperator_id_seq" OWNED BY public."KrossingoverOperator".id;
+ALTER SEQUENCE public."Issue_id_seq" OWNED BY public."Issue".id;
 
-
---
--- Name: MutationOperator; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public."MutationOperator" (
-    id integer NOT NULL,
-    scheme text NOT NULL,
-    params text,
-    objects_count integer NOT NULL
-);
-
-
-ALTER TABLE public."MutationOperator" OWNER TO postgres;
-
---
--- Name: MutationOperator_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public."MutationOperator_id_seq"
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public."MutationOperator_id_seq" OWNER TO postgres;
-
---
--- Name: MutationOperator_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public."MutationOperator_id_seq" OWNED BY public."MutationOperator".id;
-
-
---
--- Name: SelectOperator; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public."SelectOperator" (
-    id integer NOT NULL,
-    scheme text NOT NULL,
-    select_criteria text NOT NULL,
-    params text
-);
-
-
-ALTER TABLE public."SelectOperator" OWNER TO postgres;
 
 --
 -- Name: Session; Type: TABLE; Schema: public; Owner: postgres
@@ -335,7 +282,7 @@ CREATE TABLE public."Task" (
     description text,
     "id_GA" integer,
     id_user integer NOT NULL,
-    id_task_type integer NOT NULL
+    id_solver integer NOT NULL
 );
 
 
@@ -386,39 +333,19 @@ ALTER SEQUENCE public."Session_id_seq1" OWNED BY public."Session".id;
 
 
 --
--- Name: TaskType; Type: TABLE; Schema: public; Owner: postgres
+-- Name: Solver; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public."TaskType" (
+CREATE TABLE public."Solver" (
     id integer NOT NULL,
-    name text NOT NULL,
-    description text
+    name character varying NOT NULL,
+    description text,
+    model text,
+    id_issue integer NOT NULL
 );
 
 
-ALTER TABLE public."TaskType" OWNER TO postgres;
-
---
--- Name: TaskType_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public."TaskType_id_seq"
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public."TaskType_id_seq" OWNER TO postgres;
-
---
--- Name: TaskType_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public."TaskType_id_seq" OWNED BY public."TaskType".id;
-
+ALTER TABLE public."Solver" OWNER TO postgres;
 
 --
 -- Name: Template; Type: TABLE; Schema: public; Owner: postgres
@@ -512,10 +439,10 @@ ALTER SEQUENCE public.ga_id_seq OWNED BY public."GeneticAlgorithm".id;
 
 
 --
--- Name: so_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: solver_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public.so_id_seq
+CREATE SEQUENCE public.solver_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -524,13 +451,13 @@ CREATE SEQUENCE public.so_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.so_id_seq OWNER TO postgres;
+ALTER TABLE public.solver_id_seq OWNER TO postgres;
 
 --
--- Name: so_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: solver_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE public.so_id_seq OWNED BY public."SelectOperator".id;
+ALTER SEQUENCE public.solver_id_seq OWNED BY public."Solver".id;
 
 
 --
@@ -569,24 +496,10 @@ ALTER TABLE ONLY public."GeneticAlgorithm" ALTER COLUMN id SET DEFAULT nextval('
 
 
 --
--- Name: KrossingoverOperator id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: Issue id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public."KrossingoverOperator" ALTER COLUMN id SET DEFAULT nextval('public."KrossingoverOperator_id_seq"'::regclass);
-
-
---
--- Name: MutationOperator id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."MutationOperator" ALTER COLUMN id SET DEFAULT nextval('public."MutationOperator_id_seq"'::regclass);
-
-
---
--- Name: SelectOperator id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."SelectOperator" ALTER COLUMN id SET DEFAULT nextval('public.so_id_seq'::regclass);
+ALTER TABLE ONLY public."Issue" ALTER COLUMN id SET DEFAULT nextval('public."Issue_id_seq"'::regclass);
 
 
 --
@@ -597,17 +510,17 @@ ALTER TABLE ONLY public."Session" ALTER COLUMN id SET DEFAULT nextval('public."S
 
 
 --
+-- Name: Solver id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Solver" ALTER COLUMN id SET DEFAULT nextval('public.solver_id_seq'::regclass);
+
+
+--
 -- Name: Task id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."Task" ALTER COLUMN id SET DEFAULT nextval('public."Session_id_seq"'::regclass);
-
-
---
--- Name: TaskType id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."TaskType" ALTER COLUMN id SET DEFAULT nextval('public."TaskType_id_seq"'::regclass);
 
 
 --
@@ -660,31 +573,16 @@ COPY public."Generation" (id, order_number, id_session, extra_params) FROM stdin
 -- Data for Name: GeneticAlgorithm; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public."GeneticAlgorithm" (id, name, create_date, description, config, "id_KO", "id_SO", "id_MO") FROM stdin;
+COPY public."GeneticAlgorithm" (id, name, create_date, description, config) FROM stdin;
 \.
 
 
 --
--- Data for Name: KrossingoverOperator; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: Issue; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public."KrossingoverOperator" (id, scheme, params) FROM stdin;
-\.
-
-
---
--- Data for Name: MutationOperator; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public."MutationOperator" (id, scheme, params, objects_count) FROM stdin;
-\.
-
-
---
--- Data for Name: SelectOperator; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public."SelectOperator" (id, scheme, select_criteria, params) FROM stdin;
+COPY public."Issue" (id, name, description) FROM stdin;
+1	TSP	The traveling salesman problem (also called the travelling salesperson problem or TSP) asks the following question: "Given a list of cities and the distances between each pair of cities, what is the shortest possible route that visits each city exactly once and returns to the origin city?" It is an NP-hard problem in combinatorial optimization, important in theoretical computer science and operations research.
 \.
 
 
@@ -694,6 +592,42 @@ COPY public."SelectOperator" (id, scheme, select_criteria, params) FROM stdin;
 
 COPY public."Session" (id, id_user, is_deleted) FROM stdin;
 3	6	t
+4	7	f
+5	8	t
+6	10	f
+7	11	f
+8	12	f
+9	12	f
+10	12	f
+11	12	f
+12	12	f
+13	12	f
+14	12	f
+15	12	f
+16	12	f
+17	12	f
+18	12	f
+19	12	f
+20	12	f
+21	12	f
+22	12	f
+23	12	f
+24	12	f
+25	12	f
+26	12	f
+27	12	f
+28	12	f
+29	12	f
+30	12	f
+\.
+
+
+--
+-- Data for Name: Solver; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."Solver" (id, name, description, model, id_issue) FROM stdin;
+1	Ant	In computer science and operations research, the ant colony optimization algorithm (ACO) is a probabilistic technique for solving computational problems which can be reduced to finding good paths through graphs.	\N	1
 \.
 
 
@@ -701,15 +635,7 @@ COPY public."Session" (id, id_user, is_deleted) FROM stdin;
 -- Data for Name: Task; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public."Task" (id, name, create_date, description, "id_GA", id_user, id_task_type) FROM stdin;
-\.
-
-
---
--- Data for Name: TaskType; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public."TaskType" (id, name, description) FROM stdin;
+COPY public."Task" (id, name, create_date, description, "id_GA", id_user, id_solver) FROM stdin;
 \.
 
 
@@ -732,6 +658,11 @@ COPY public."User" (id, login, pass) FROM stdin;
 4	HelloBoy	123456
 5	HelloBoy2	123456
 6	HelloBoy3	123456
+7	Arrr	123456
+8	bobaAndBiba	123456
+10	adgsthrgreg	arggsegeagfraef
+11	argargaegeargae	rgaegaegergegae
+12	lolkek	topkek
 \.
 
 
@@ -764,17 +695,10 @@ SELECT pg_catalog.setval('public."Generation_id_seq"', 1, false);
 
 
 --
--- Name: KrossingoverOperator_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: Issue_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public."KrossingoverOperator_id_seq"', 1, false);
-
-
---
--- Name: MutationOperator_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public."MutationOperator_id_seq"', 1, false);
+SELECT pg_catalog.setval('public."Issue_id_seq"', 1, true);
 
 
 --
@@ -788,14 +712,7 @@ SELECT pg_catalog.setval('public."Session_id_seq"', 1, false);
 -- Name: Session_id_seq1; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public."Session_id_seq1"', 3, true);
-
-
---
--- Name: TaskType_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public."TaskType_id_seq"', 1, false);
+SELECT pg_catalog.setval('public."Session_id_seq1"', 30, true);
 
 
 --
@@ -809,7 +726,7 @@ SELECT pg_catalog.setval('public."Template_id_seq"', 1, false);
 -- Name: User_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public."User_id_seq"', 6, true);
+SELECT pg_catalog.setval('public."User_id_seq"', 12, true);
 
 
 --
@@ -820,10 +737,10 @@ SELECT pg_catalog.setval('public.ga_id_seq', 1, false);
 
 
 --
--- Name: so_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: solver_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.so_id_seq', 1, false);
+SELECT pg_catalog.setval('public.solver_id_seq', 1, true);
 
 
 --
@@ -867,19 +784,11 @@ ALTER TABLE ONLY public."GenTemplate"
 
 
 --
--- Name: KrossingoverOperator krossingoveroperator_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: Issue issue_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public."KrossingoverOperator"
-    ADD CONSTRAINT krossingoveroperator_pk PRIMARY KEY (id);
-
-
---
--- Name: MutationOperator mutationoperator_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."MutationOperator"
-    ADD CONSTRAINT mutationoperator_pk PRIMARY KEY (id);
+ALTER TABLE ONLY public."Issue"
+    ADD CONSTRAINT issue_pk PRIMARY KEY (id);
 
 
 --
@@ -891,11 +800,11 @@ ALTER TABLE ONLY public."Session"
 
 
 --
--- Name: SelectOperator so_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: Solver solver_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public."SelectOperator"
-    ADD CONSTRAINT so_pk PRIMARY KEY (id);
+ALTER TABLE ONLY public."Solver"
+    ADD CONSTRAINT solver_pk PRIMARY KEY (id);
 
 
 --
@@ -904,14 +813,6 @@ ALTER TABLE ONLY public."SelectOperator"
 
 ALTER TABLE ONLY public."Task"
     ADD CONSTRAINT task_pk PRIMARY KEY (id);
-
-
---
--- Name: TaskType tasktype_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."TaskType"
-    ADD CONSTRAINT tasktype_pk PRIMARY KEY (id);
 
 
 --
@@ -973,17 +874,17 @@ CREATE UNIQUE INDEX gentemplate_id_uindex ON public."GenTemplate" USING btree (i
 
 
 --
--- Name: krossingoveroperator_id_uindex; Type: INDEX; Schema: public; Owner: postgres
+-- Name: issue_id_uindex; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE UNIQUE INDEX krossingoveroperator_id_uindex ON public."KrossingoverOperator" USING btree (id);
+CREATE UNIQUE INDEX issue_id_uindex ON public."Issue" USING btree (id);
 
 
 --
--- Name: mutationoperator_id_uindex; Type: INDEX; Schema: public; Owner: postgres
+-- Name: issue_name_uindex; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE UNIQUE INDEX mutationoperator_id_uindex ON public."MutationOperator" USING btree (id);
+CREATE UNIQUE INDEX issue_name_uindex ON public."Issue" USING btree (name);
 
 
 --
@@ -994,10 +895,17 @@ CREATE UNIQUE INDEX session_id_uindex ON public."Session" USING btree (id);
 
 
 --
--- Name: so_id_uindex; Type: INDEX; Schema: public; Owner: postgres
+-- Name: solver_id_uindex; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE UNIQUE INDEX so_id_uindex ON public."SelectOperator" USING btree (id);
+CREATE UNIQUE INDEX solver_id_uindex ON public."Solver" USING btree (id);
+
+
+--
+-- Name: solver_name_uindex; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX solver_name_uindex ON public."Solver" USING btree (name);
 
 
 --
@@ -1005,20 +913,6 @@ CREATE UNIQUE INDEX so_id_uindex ON public."SelectOperator" USING btree (id);
 --
 
 CREATE UNIQUE INDEX task_id_uindex ON public."Task" USING btree (id);
-
-
---
--- Name: tasktype_id_uindex; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE UNIQUE INDEX tasktype_id_uindex ON public."TaskType" USING btree (id);
-
-
---
--- Name: tasktype_name_uindex; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE UNIQUE INDEX tasktype_name_uindex ON public."TaskType" USING btree (name);
 
 
 --
@@ -1083,30 +977,6 @@ ALTER TABLE ONLY public."Generation"
 
 
 --
--- Name: GeneticAlgorithm geneticalgorithm_krossingoveroperator_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."GeneticAlgorithm"
-    ADD CONSTRAINT geneticalgorithm_krossingoveroperator_id_fk FOREIGN KEY ("id_KO") REFERENCES public."KrossingoverOperator"(id);
-
-
---
--- Name: GeneticAlgorithm geneticalgorithm_mutationoperator_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."GeneticAlgorithm"
-    ADD CONSTRAINT geneticalgorithm_mutationoperator_id_fk FOREIGN KEY ("id_MO") REFERENCES public."MutationOperator"(id);
-
-
---
--- Name: GeneticAlgorithm geneticalgorithm_selectoperator_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."GeneticAlgorithm"
-    ADD CONSTRAINT geneticalgorithm_selectoperator_id_fk FOREIGN KEY ("id_SO") REFERENCES public."SelectOperator"(id);
-
-
---
 -- Name: GenTemplate gentemplate_gen_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1139,11 +1009,19 @@ ALTER TABLE ONLY public."Session"
 
 
 --
--- Name: Task task_tasktype_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: Solver solver_issue_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Solver"
+    ADD CONSTRAINT solver_issue_id_fk FOREIGN KEY (id_issue) REFERENCES public."Issue"(id);
+
+
+--
+-- Name: Task task_solver_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public."Task"
-    ADD CONSTRAINT task_tasktype_id_fk FOREIGN KEY (id_task_type) REFERENCES public."TaskType"(id);
+    ADD CONSTRAINT task_solver_id_fk FOREIGN KEY (id_solver) REFERENCES public."Solver"(id);
 
 
 --

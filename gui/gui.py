@@ -2,6 +2,14 @@ import PySimpleGUI as sg
 import requests
 import datetime
 
+
+
+class Issue:
+    def __init__(self, id, name, description):
+        self.id = id
+        self.name = name
+        self.description = description
+
 class User:
     def __init__(self, isAuth, sessionID):
         self.isAuth = isAuth
@@ -56,10 +64,13 @@ def makeHomeWindow():
          sg.Column(right_col, element_justification='c')]]
     return sg.Window(title="Home window", layout=layout, margins=(20, 20))
 
-def makeCreateWindow():
+def makeCreateWindow(issues):
     layout = [
         [sg.Text(text="Name:", size=(10, 1), font=14), sg.In(enable_events=True, key="-NAME-")],
-        [sg.Text(text="Type:", size=(10, 1), font=14), sg.Combo(["Ant"], key="-TYPE-")],
+        [sg.Text(text="Description:", size=(10, 1), font=14), sg.In(enable_events=True, key="-DESC-")],
+        [sg.Text(text="Issue:", size=(10, 1), font=14), sg.Combo([i.name for i in issues], enable_events=True, key="-ISSUE-")],
+        [sg.Text(text="Solver:", size=(10, 1), font=14), sg.Combo(["1", "2"], visible=False, enable_events=True, key="-SOLVER-")],
+        [sg.Text(text="Genetic algorithm:", size=(10, 1), font=14), sg.Combo(["a", "b"], visible=False, enable_events=True, key="-GEN_ALG-")],
         [sg.Button(button_text="Create", key="-CREATE-"), sg.Button(button_text="Cancel", key="-CANCEL-")]]
     return sg.Window(title="Create Window", layout=layout, margins=(20, 20))
 
@@ -138,7 +149,15 @@ def homeWindowProcess():
             homeWindow.UnHide()
 
 def createWindowProcess():
-    createWindow = makeCreateWindow()
+    url = state.server.address + "issue/list"
+    print(url)
+    resp = requests.get(url, cookies={"session_id": str(state.user.sessionID)})
+    issues = []
+    for value in resp.json()["data"]:
+        issue = Issue(value["id"], value["name"], value["description"])
+        issues.append(issue)
+
+    createWindow = makeCreateWindow(issues)
 
     while True:
         event, value = createWindow.read()
@@ -146,14 +165,22 @@ def createWindowProcess():
             createWindow.close()
             print("Closing create window....")
             break
+        elif event == "-ISSUE-":
+            print("issue chosed")
+            createWindow["-SOLVER-"].Update(visible=True)
+        elif event == "-SOLVER-":
+            createWindow["-GEN_ALG-"].Update(visible=True)
         elif event == "-CREATE-": # заглушка
-            url = state.server.address + "create?task_name=" + createWindow["-NAME-"].get() + "&task_type=" + createWindow["-TYPE-"].get()
+            url = state.server.address + "create?task_name=" + createWindow["-NAME-"].get() 
+            + "&solver_name=" + createWindow["-SOLVER-"].get()
+            + "&gen_alg_name" + createWindow["-GEN_ALG-"].get()
             print(url)
             resp = requests.post(url, cookies={"session_id": str(state.user.sessionID)})
             if resp.json()["meta"]["info"] == "OK":
                 break
             else:
                 print(resp.json()["meta"]["err"])
+        print(event)
 
 state = State(False, -1, "http://127.0.0.1:8080/")
 authWindow = makeAuthWindow()
