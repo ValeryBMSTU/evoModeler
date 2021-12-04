@@ -69,8 +69,8 @@ def makeCreateWindow(issues):
         [sg.Text(text="Name:", size=(10, 1), font=14), sg.In(enable_events=True, key="-NAME-")],
         [sg.Text(text="Description:", size=(10, 1), font=14), sg.In(enable_events=True, key="-DESC-")],
         [sg.Text(text="Issue:", size=(10, 1), font=14), sg.Combo([i.name for i in issues], enable_events=True, key="-ISSUE-")],
-        [sg.Text(text="Solver:", size=(10, 1), font=14), sg.Combo(["1", "2"], visible=False, enable_events=True, key="-SOLVER-")],
-        [sg.Text(text="Genetic algorithm:", size=(10, 1), font=14), sg.Combo(["a", "b"], visible=False, enable_events=True, key="-GEN_ALG-")],
+        [sg.Text(text="Solver:", size=(10, 1), font=14), sg.Combo(["Ant", "2"], visible=False, enable_events=True, key="-SOLVER-")],
+        [sg.Text(text="Genetic algorithm:", size=(10, 1), font=14), sg.Combo(["std", "b"], visible=False, enable_events=True, key="-GEN_ALG-")],
         [sg.Button(button_text="Create", key="-CREATE-"), sg.Button(button_text="Cancel", key="-CANCEL-")]]
     return sg.Window(title="Create Window", layout=layout, margins=(20, 20))
 
@@ -171,9 +171,12 @@ def createWindowProcess():
         elif event == "-SOLVER-":
             createWindow["-GEN_ALG-"].Update(visible=True)
         elif event == "-CREATE-": # заглушка
-            url = state.server.address + "create?task_name=" + createWindow["-NAME-"].get() 
-            + "&solver_name=" + createWindow["-SOLVER-"].get()
-            + "&gen_alg_name" + createWindow["-GEN_ALG-"].get()
+            url = state.server.address + "task?task_name=" +\
+                  createWindow["-NAME-"].get() +\
+                  '&solver_name=' +\
+                  createWindow["-SOLVER-"].get() +\
+                  "&gen_alg_name=" +\
+                  createWindow["-GEN_ALG-"].get()
             print(url)
             resp = requests.post(url, cookies={"session_id": str(state.user.sessionID)})
             if resp.json()["meta"]["info"] == "OK":

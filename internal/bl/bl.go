@@ -158,7 +158,7 @@ func (bl *Bl) CreateTask(taskName, solverName, genAlgName string, user domain.Us
 
 	taskID, err := bl.Da.InsertTask(task)
 	if err != nil {
-		return task, nil
+		return task, err
 	}
 
 	task.ID = taskID
@@ -177,6 +177,14 @@ func (bl *Bl) RunTask(task domain.Task) (err error) {
 		return err
 	}
 
+	taskModel := [][]int{{0, 2, 30, 9, 1},
+		{4, 0, 47, 7, 7},
+		{31, 33, 0, 33, 36},
+		{20, 13, 16, 0, 28},
+		{9, 36, 22, 22, 0}}
+
+	task.Solver.Set(taskModel)
+
 	err = bl.RunGenAlg(task.GenAlg, task.Solver, task.ID)
 	if err != nil {
 		return err
@@ -186,14 +194,20 @@ func (bl *Bl) RunTask(task domain.Task) (err error) {
 }
 
 func (bl *Bl) RunGenAlg(genAlg domain.GenAlg, solver domain.Solver, taskID int) (err error) {
-	_, err = genAlg.InitGeneration(taskID, solver.GetBaseParams())
+	generation, err := genAlg.InitGeneration(taskID, solver.GetBaseParams())
 	if err != nil {
 		return err
 	}
 
-	//for i := 0; i < 100; i++ {
-	//	genAlg.CalculateFitness()
-	//}
+	for i := 0; i < 10; i++ {
+		if generation, err = genAlg.Selection(generation); err != nil {
+			return err
+		} else if generation, err = genAlg.Reproduction(generation); err != nil {
+			return err
+		} else if generation, err = genAlg.CalculateFitness(generation, solver); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

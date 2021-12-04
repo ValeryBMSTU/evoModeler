@@ -18,8 +18,8 @@ const (
 
 	insertUserQuery    = `insert into "User" (login, pass) values ($1, $2) returning id`
 	insertSessionQuery = `insert into "Session" (id_user, is_deleted) values ($1, $2) returning id`
-	insertTaskQuery    = `INSERT INTO "Task" (name, create_date, description, status, id_user, id_GA, id_solver)
-						  VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`
+	insertTaskQuery    = `INSERT INTO "Task" (name, description, status, id_user, id_ga, id_solver)
+						  VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`
 
 	updateTaskStatusQuery = `UPDATE "Task" SET status = $1 WHERE id = $2`
 
@@ -28,7 +28,7 @@ const (
 	selectSessionByIDQuery        = `SELECT id, id_user, is_deleted FROM "Session" WHERE id=$1`
 	selectSolversQuery            = `SELECT id, name, description, id_issue FROM "Solver"`
 	selectSolverBySolverNameQuery = `SELECT id, name, description, id_issue FROM "Solver" WHERE name=$1`
-	selectGenAlgByGenAlgNameQuery = `SELECT id, name, description, config FROM "GeneticAlgorithm WHERE name=$1"`
+	selectGenAlgByGenAlgNameQuery = `SELECT id, name, description, config FROM "GeneticAlgorithm" WHERE name=$1`
 	selectIssuesQuery             = `SELECT id, name, description FROM "Issue"`
 
 	deleteSessionQuery = `UPDATE "Session" SET is_deleted=true WHERE id = $1`
@@ -93,13 +93,11 @@ func (da *Da) InsertTask(task domain.Task) (taskID int, err error) {
 	var lastInsertID int
 	err = db.QueryRow(insertTaskQuery,
 		task.Name,
-		task.CreateDate,
 		task.Description,
 		task.Status,
 		task.UserID,
 		task.GenAlgID,
-		task.SolverID,
-		false).Scan(&lastInsertID)
+		task.SolverID).Scan(&lastInsertID)
 	if err != nil {
 		fmt.Println(err)
 		return -1, err
@@ -117,11 +115,9 @@ func (da *Da) UpdateTaskStatus(taskID int, status string) (err error) {
 	defer db.Close()
 
 	fmt.Println(taskID)
-	var lastInsertID int
-	err = db.QueryRow(updateTaskStatusQuery,
+	_, err = db.Exec(updateTaskStatusQuery,
 		status,
-		taskID,
-		false).Scan(&lastInsertID)
+		taskID)
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -218,17 +214,17 @@ func (da *Da) SelectSolver(solverName string) (solver domain.Solver, err error) 
 		return solver, err
 	}
 
-	if name == "ant" {
+	if name == "Ant" {
 		solver = &domain.AntSolver{
 			ID:          ID,
 			Name:        name,
 			Description: desc,
 			Model:       nil,
 			IssueID:     issueID,
-			Alpha:       0,
-			Beta:        0,
-			Rho:         0,
-			Quantity:    0,
+			Alpha:       1.0,
+			Beta:        1.0,
+			Rho:         0.3,
+			Quantity:    100.0,
 		}
 	} else {
 		return solver, errors.New("unknown solver")
@@ -257,6 +253,7 @@ func (da *Da) SelectGenAlg(genAlgName string) (genAlg domain.GenAlg, err error) 
 	genAlg.PopSize = 10
 	genAlg.MutationChance = 0.1
 	genAlg.MutationPower = 0.1
+	genAlg.DropPart = 0.3
 
 	return genAlg, nil
 }
