@@ -65,7 +65,7 @@ func CreateEchoServer(api API) (server *echo.Echo, err error) {
 	e.POST("/singup", api.SingUpHandler)
 	e.POST("/login", api.LogInHandler)
 	e.DELETE("/logout", api.LogOutHandler)
-	e.POST("/create", api.CreateTaskHandler)
+	e.POST("/task", api.CreateTaskHandler)
 	e.GET("/issue/list", api.GetIssuesHandler)
 	e.GET("/solver/list", api.GetSolversHandler)
 	return e, nil

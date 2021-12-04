@@ -3,16 +3,20 @@ package bl
 import (
 	"errors"
 	"github.com/ValeryBMSTU/evoModeler/internal/domain"
+	"time"
 )
 
 type DA interface {
 	InsertUser(login, pass string) (userID int, err error)
 	InsertSession(userID int) (sessionID int, err error)
+	InsertTask(task domain.Task) (taskID int, err error)
+	UpdateTaskStatus(taskID int, status string) (err error)
 	DeleteSession(sessionID int) (err error)
 	SelectUser(login, pass string) (userID int, err error)
 	SelectUserByID(userID int) (user domain.User, err error)
 	SelectSession(sessionID int) (id int, idUser int, isDeleted bool, err error)
 	SelectSolver(solverName string) (solver domain.Solver, err error)
+	SelectGenAlg(genAlgName string) (genAlg domain.GenAlg, err error)
 	SelectSolvers() (solvers []domain.Solver, err error)
 	SelectIssues() (issues []domain.Issue, err error)
 }
@@ -129,12 +133,67 @@ func (bl *Bl) TakeIssues() (issues []domain.Issue, err error) {
 }
 
 func (bl *Bl) CreateTask(taskName, solverName, genAlgName string, user domain.User) (task domain.Task, err error) {
-	_, err = bl.Da.SelectSolver(solverName)
+	solver, err := bl.Da.SelectSolver(solverName)
 	if err != nil {
 		return task, err
 	}
 
+	genAlg, err := bl.Da.SelectGenAlg(genAlgName)
+	if err != nil {
+		return task, err
+	}
 
+	task = domain.Task{
+		ID:          -1,
+		Name:        taskName,
+		CreateDate:  time.Now().String(),
+		Description: "default desc",
+		Status:      "init",
+		UserID:      user.ID,
+		GenAlgID:    genAlg.ID,
+		SolverID:    solver.GetID(),
+		Solver:      solver,
+		GenAlg:      genAlg,
+	}
+
+	taskID, err := bl.Da.InsertTask(task)
+	if err != nil {
+		return task, nil
+	}
+
+	task.ID = taskID
+
+	err = bl.RunTask(task)
+	if err != nil {
+		return task, nil
+	}
 
 	return task, nil
+}
+
+func (bl *Bl) RunTask(task domain.Task) (err error) {
+	err = bl.Da.UpdateTaskStatus(task.ID, "running")
+	if err != nil {
+		return err
+	}
+
+	err = bl.RunGenAlg(task.GenAlg, task.Solver, task.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (bl *Bl) RunGenAlg(genAlg domain.GenAlg, solver domain.Solver, taskID int) (err error) {
+	_, err = genAlg.InitGeneration(taskID, solver.GetBaseParams())
+	if err != nil {
+		return err
+	}
+
+	//for i := 0; i < 100; i++ {
+	//	genAlg.CalculateFitness()
+	//}
+
+	return nil
 }
