@@ -2,7 +2,6 @@ package domain
 
 import (
 	"errors"
-	"fmt"
 	"github.com/ValeryBMSTU/evoModeler/pkg"
 	"math/rand"
 )
@@ -10,7 +9,7 @@ import (
 type Solver interface {
 	GetID() (id int)
 	Set(model interface{}) (err error)
-	Solve(params map[string]float64) (score int, err error)
+	Solve(params map[string]float64) (score float64, err error)
 	GetBaseParams() (params map[string]float64)
 }
 
@@ -51,18 +50,18 @@ func (s *AntSolver) Set(model interface{}) (err error) {
 	return nil
 }
 
-func (s *AntSolver) Solve(params map[string]float64) (score int, err error) {
+func (s *AntSolver) Solve(params map[string]float64) (score float64, err error) {
 	L := s.Model
 	cities := len(L[0])
-	ages := 10 * cities
+	ages := 30
 	ants := 20
 
 	alpha := params["alpha"]
 	beta := params["beta"]
 	rho := params["rho"]
 	quantity := int(params["quantity"])
-	e := 5
-	ph := quantity / cities
+	e := 2
+	ph := float64(quantity) / float64(cities)
 
 	revMatrix := s.CalcRevMatrix(L)
 	tao := s.CalcTaoMatrix(L, ph)
@@ -73,6 +72,7 @@ func (s *AntSolver) Solve(params map[string]float64) (score int, err error) {
 	antDist := make([]int, ants, ants)
 	antBestDist := make([]int, ages, ages)
 	antAvgDist := make([]int, ages, ages)
+	//bestAge := 999999
 
 	for age := 0; age < ages; age++ {
 		antRoute = pkg.GetZeroIntMatrix(ants, cities)
@@ -93,23 +93,23 @@ func (s *AntSolver) Solve(params map[string]float64) (score int, err error) {
 				isNotChosen := true
 				for isNotChosen {
 					r := rand.Float64()
-					for _, p := range P {
-						for c := 0; c < cities; c++ {
-							if p >= r {
-								antRoute[ant][city] = c
-								isNotChosen = false
-								break
-							}
-						}
-						if !isNotChosen {
+					for c := 0; c < cities; c++ {
+						if P[c] >= r {
+							antRoute[ant][city] = c
+							isNotChosen = false
 							break
 						}
 					}
 				}
 			}
 
-			for city := 1; city < cities; city++ {
-				cityFrom := antRoute[ant][city-1]
+			for city := 0; city < cities; city++ {
+				cityFrom := -1
+				if city == 0 {
+					cityFrom = antRoute[ant][cities-1]
+				} else {
+					cityFrom = antRoute[ant][city-1]
+				}
 				cityTo := antRoute[ant][city]
 				antDist[ant] += L[cityFrom][cityTo]
 			}
@@ -117,6 +117,7 @@ func (s *AntSolver) Solve(params map[string]float64) (score int, err error) {
 			for antDist[ant] < bestDist {
 				bestDist = antDist[ant]
 				bestRoute = antRoute[ant]
+				//bestAge = age
 			}
 
 		}
@@ -124,17 +125,27 @@ func (s *AntSolver) Solve(params map[string]float64) (score int, err error) {
 		tao = pkg.MultMatrix(tao, 1-rho)
 
 		for ant := 0; ant < ants; ant++ {
-			for city := 1; city < cities; city++ {
+			for city := 0; city < cities; city++ {
+				cityFrom := -1
+				if city == 0 {
+					cityFrom = antRoute[ant][cities-1]
+				} else {
+					cityFrom = antRoute[ant][city-1]
+				}
 				cityTo := antRoute[ant][city]
-				cityFrom := antRoute[ant][city-1]
 				tao[cityFrom][cityTo] = tao[cityFrom][cityTo] + (float64(quantity) / float64(antDist[ant]))
 				tao[cityTo][cityFrom] = tao[cityFrom][cityTo]
 			}
 		}
 
-		for city := 1; city < cities; city++ {
+		for city := 0; city < cities; city++ {
+			cityFrom := -1
+			if city == 0 {
+				cityFrom = bestRoute[cities-1]
+			} else {
+				cityFrom = bestRoute[city-1]
+			}
 			cityTo := bestRoute[city]
-			cityFrom := bestRoute[city-1]
 			tao[cityFrom][cityTo] = tao[cityFrom][cityTo] + (float64(e) * float64(quantity) / float64(bestDist))
 			tao[cityTo][cityFrom] = tao[cityFrom][cityTo]
 		}
@@ -143,9 +154,9 @@ func (s *AntSolver) Solve(params map[string]float64) (score int, err error) {
 		antAvgDist[age] = pkg.ArrayAvg(antDist)
 	}
 
-	fmt.Println(bestDist)
+	//fmt.Println(bestDist)
 
-	return bestDist, nil
+	return float64(bestDist), nil
 }
 
 func (s *AntSolver) CalcRevMatrix(matrix [][]int) (revMatrix [][]float64) {
@@ -156,22 +167,24 @@ func (s *AntSolver) CalcRevMatrix(matrix [][]int) (revMatrix [][]float64) {
 
 	for i, arr := range matrix {
 		for j, v := range arr {
-			revMatrix[i][j] = 1.0 / float64(v)
+			if i != j {
+				revMatrix[i][j] = 1.0 / float64(v)
+			}
 		}
 	}
 
 	return revMatrix
 }
 
-func (s *AntSolver) CalcTaoMatrix(matrix [][]int, ph int) (newMatrix [][]float64) {
+func (s *AntSolver) CalcTaoMatrix(matrix [][]int, ph float64) (newMatrix [][]float64) {
 	taoMatrix := make([][]float64, len(matrix))
 	for i := 0; i < len(matrix); i++ {
 		taoMatrix[i] = make([]float64, len(matrix))
 	}
 
 	for i, arr := range matrix {
-		for j, v := range arr {
-			taoMatrix[i][j] = float64(v) * float64(ph)
+		for j, _ := range arr {
+			taoMatrix[i][j] = 1.0 * ph
 		}
 	}
 

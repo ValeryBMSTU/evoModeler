@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"fmt"
+	"github.com/ValeryBMSTU/evoModeler/pkg"
 	"math/rand"
 	"sort"
 )
@@ -50,15 +52,43 @@ func (ga *GenAlg) CreateAgent(generationID int, genocode map[string]float64) (ag
 	return agent, nil
 }
 
-func (ga *GenAlg) CalculateFitness(generation Generation, solver Solver) (newGeneration Generation, err error) {
+func (ga *GenAlg) CalculateFitness(generation Generation, solver Solver) (newGeneration Generation,
+	bestScore float64, bestParams map[string]float64, avgScore float64, avgParams map[string]float64, err error) {
+
+	bestScore = 999999.0
+	scores := make([]float64, 0, 0)
+	bestParams = make(map[string]float64)
+	avgParams = make(map[string]float64)
+	params := make(map[string][]float64)
+
 	for index, agent := range generation.Agents {
 		agent.FitnessValue, err = solver.Solve(agent.Genocode)
 		if err != nil {
-			return generation, err
+			return generation, bestScore, bestParams, avgScore, avgParams, err
 		}
+
+		scores = append(scores, agent.FitnessValue)
+		for k, v := range agent.Genocode {
+			params[k] = append(params[k], v)
+		}
+
+		if agent.FitnessValue < bestScore {
+			bestScore = agent.FitnessValue
+			for k, v := range agent.Genocode {
+				bestParams[k] = v
+			}
+		}
+
+		fmt.Println("Age: ", generation.OrderNumber, "agent ", index, ": ", agent.FitnessValue)
 		generation.Agents[index] = agent
 	}
-	return generation, nil
+
+	avgScore = pkg.ArrayFloat64Avg(scores)
+	for k, _ := range generation.Agents[0].Genocode {
+		avgParams[k] = pkg.ArrayFloat64Avg(params[k])
+	}
+
+	return generation, bestScore, bestParams, avgScore, avgParams, nil
 }
 
 func (ga *GenAlg) Selection(generation Generation) (newGeneration Generation, err error) {
@@ -77,15 +107,45 @@ func (ga *GenAlg) SortGeneration(generation Generation) (newGeneration Generatio
 	return generation, nil
 }
 
-func (ga *GenAlg) Reproduction(generation Generation) (newGeneration Generation, err error) {
+func (ga *GenAlg) Reproduction(generation Generation, age int) (newGeneration Generation, err error) {
 	newGeneration = generation
+	newGeneration.OrderNumber = age
 	for len(newGeneration.Agents) < ga.PopSize {
-		newAgent := generation.Agents[rand.Int()%len(generation.Agents)]
+
+		oldAgentPos := rand.Int() % (len(generation.Agents) / 2)
+		newGenocode := ga.CopyGenocode(generation.Agents[oldAgentPos].Genocode)
+		newAgent := Agent{
+			ID:           rand.Int(),
+			FitnessValue: 0,
+			ParentID:     generation.Agents[oldAgentPos].ID,
+			GenerationID: generation.ID,
+			CodeID:       -1,
+			Genocode:     newGenocode,
+		}
+
 		if r := rand.Float64(); r < ga.MutationChance {
 			newAgent.Mutate(ga.MutationPower)
 		}
+
 		newGeneration.Agents = append(newGeneration.Agents, newAgent)
 	}
 
+	ga.ShuffleAgents(newGeneration.Agents)
+
 	return newGeneration, nil
+}
+
+func (ga *GenAlg) CopyGenocode(oldCode map[string]float64) (newCode map[string]float64) {
+	newCode = make(map[string]float64)
+	for k, v := range oldCode {
+		newCode[k] = v
+	}
+	return newCode
+}
+
+func (ga *GenAlg) ShuffleAgents(agents []Agent) {
+	for i := range agents {
+		j := rand.Intn(i + 1)
+		agents[i], agents[j] = agents[j], agents[i]
+	}
 }

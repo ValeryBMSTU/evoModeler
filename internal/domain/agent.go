@@ -4,7 +4,7 @@ import "math/rand"
 
 type Agent struct {
 	ID           int                `json:"id"`
-	FitnessValue int                `json:"fitness_value"`
+	FitnessValue float64            `json:"fitness_value"`
 	ParentID     int                `json:"parent_id"`
 	GenerationID int                `json:"generation_id"`
 	CodeID       int                `json:"code_id"`

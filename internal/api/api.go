@@ -17,7 +17,7 @@ type BL interface {
 	CheckSession(sessionID int) (isExist bool, err error)
 	TakeUser(sessionID int) (user domain.User, err error)
 	TakeSession(userID int) (session domain.Session, err error)
-	CreateTask(taskName, solverName, genAlgName string, user domain.User) (task domain.Task, err error)
+	CreateTask(taskName, solverName, genAlgName string, user domain.User) (result domain.Result, err error)
 	TakeSolver(solverName string) (solver domain.Solver, err error)
 	TakeSolvers() (solver []domain.Solver, err error)
 	TakeIssues() (issues []domain.Issue, err error)
@@ -29,12 +29,12 @@ type Api struct {
 
 type RespFormat struct {
 	Data interface{} `json:"data"`
-	Meta Meta`json:"meta"`
+	Meta Meta        `json:"meta"`
 }
 
 type Meta struct {
 	Info string `json:"info"`
-	Err string `json:"err"`
+	Err  string `json:"err"`
 }
 
 type CustomMiddlewares struct {
@@ -87,7 +87,7 @@ func (m *CustomMiddlewares) ErrorMiddleware(next echo.HandlerFunc) echo.HandlerF
 		if err := next(ctx); err != nil {
 			ctx.Logger().Error(err)
 
-			resp := &RespFormat {
+			resp := &RespFormat{
 				Data: nil,
 				Meta: Meta{"OK", err.Error()},
 			}
@@ -120,8 +120,10 @@ func (api *Api) CheckAuth(ctx echo.Context) (err error) {
 func (api *Api) PingHandler(ctx echo.Context) (err error) {
 	fmt.Printf("%s", "Что-то прилетело в PingHandler...")
 
-	resp := &RespFormat {
-		Data: struct {Pong string `json:"pong"`}{"pong"},
+	resp := &RespFormat{
+		Data: struct {
+			Pong string `json:"pong"`
+		}{"pong"},
 		Meta: Meta{"OK", ""},
 	}
 
@@ -129,7 +131,7 @@ func (api *Api) PingHandler(ctx echo.Context) (err error) {
 }
 
 func (api *Api) DoNothingHandler(ctx echo.Context) (err error) {
-	resp := &RespFormat {
+	resp := &RespFormat{
 		Data: nil,
 		Meta: Meta{"OK", ""},
 	}
@@ -146,8 +148,10 @@ func (api *Api) SingUpHandler(ctx echo.Context) (err error) {
 		return err
 	}
 
-	resp := &RespFormat {
-		Data: struct {SessionID int `json:"session_id"`}{sessionID},
+	resp := &RespFormat{
+		Data: struct {
+			SessionID int `json:"session_id"`
+		}{sessionID},
 		Meta: Meta{"OK", ""},
 	}
 
@@ -163,8 +167,10 @@ func (api *Api) LogInHandler(ctx echo.Context) (err error) {
 		return err
 	}
 
-	resp := &RespFormat {
-		Data: struct {SessionID int `json:"session_id"`}{sessionID},
+	resp := &RespFormat{
+		Data: struct {
+			SessionID int `json:"session_id"`
+		}{sessionID},
 		Meta: Meta{"OK", ""},
 	}
 
@@ -182,7 +188,7 @@ func (api *Api) LogOutHandler(ctx echo.Context) (err error) {
 		return err
 	}
 
-	resp := &RespFormat {
+	resp := &RespFormat{
 		Data: nil,
 		Meta: Meta{"OK", ""},
 	}
@@ -213,13 +219,13 @@ func (api *Api) CreateTaskHandler(ctx echo.Context) (err error) {
 	//	return err
 	//}
 
-	task, err := api.Bl.CreateTask(taskName, solverName, genAlgName, user)
+	result, err := api.Bl.CreateTask(taskName, solverName, genAlgName, user)
 	if err != nil {
 		return err
 	}
 
-	resp := &RespFormat {
-		Data: task,
+	resp := &RespFormat{
+		Data: result,
 		Meta: Meta{"OK", ""},
 	}
 
@@ -232,7 +238,7 @@ func (api *Api) GetSolversHandler(ctx echo.Context) (err error) {
 		return err
 	}
 
-	resp := &RespFormat {
+	resp := &RespFormat{
 		Data: solvers,
 		Meta: Meta{"OK", ""},
 	}
@@ -246,7 +252,7 @@ func (api *Api) GetIssuesHandler(ctx echo.Context) (err error) {
 		return err
 	}
 
-	resp := &RespFormat {
+	resp := &RespFormat{
 		Data: issues,
 		Meta: Meta{"OK", ""},
 	}

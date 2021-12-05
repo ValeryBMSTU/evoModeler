@@ -221,10 +221,10 @@ func (da *Da) SelectSolver(solverName string) (solver domain.Solver, err error) 
 			Description: desc,
 			Model:       nil,
 			IssueID:     issueID,
-			Alpha:       1.0,
-			Beta:        1.0,
-			Rho:         0.3,
-			Quantity:    100.0,
+			Alpha:       0.1,
+			Beta:        12.5,
+			Rho:         0.10,
+			Quantity:    1200.0,
 		}
 	} else {
 		return solver, errors.New("unknown solver")
@@ -250,10 +250,10 @@ func (da *Da) SelectGenAlg(genAlgName string) (genAlg domain.GenAlg, err error) 
 		return genAlg, err
 	}
 
-	genAlg.PopSize = 10
-	genAlg.MutationChance = 0.1
-	genAlg.MutationPower = 0.1
-	genAlg.DropPart = 0.3
+	genAlg.PopSize = 30
+	genAlg.MutationChance = 0.2
+	genAlg.MutationPower = 0.8
+	genAlg.DropPart = 0.4
 
 	return genAlg, nil
 }

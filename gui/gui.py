@@ -1,7 +1,9 @@
+import json
+
 import PySimpleGUI as sg
 import requests
 import datetime
-
+import matplotlib.pyplot as plt
 
 
 class Issue:
@@ -24,6 +26,13 @@ class State:
         self.user = User(isAuth, sessionID)
         self.server = Server(address)
 
+# class TaskResult:
+#     def __init__(self, bestScores, bestParams, avgScores, avgParams):
+#         self.bestScores = bestScores
+#         self.bestParams = bestParams
+#         self.avgScores = avgScores
+#         self.avgParams = avgParams
+
 sg.theme("DarkTeal2")
 
 def makeExpertWindow():
@@ -38,8 +47,8 @@ def makeExpertWindow():
 
 def makeAuthWindow():
     layout = [
-        [sg.Text(text="Login:", size=(10, 1), font=14), sg.In(enable_events=True, key="-LOGIN-")],
-        [sg.Text(text="Password:", size=(10, 1), font=14), sg.In(enable_events=True, key="-PASS-")],
+        [sg.Text(text="Login:", size=(10, 1), font=14), sg.In(default_text="avocado", enable_events=True, key="-LOGIN-")],
+        [sg.Text(text="Password:", size=(10, 1), font=14), sg.In(default_text="avocado", enable_events=True, key="-PASS-")],
         [sg.Button(button_text="Log in", key="-LOG_IN-")],
         [sg.Button(button_text="Registration", key="-REG-")]]
     return sg.Window(title="Auth Window", layout=layout, margins=(20, 20))
@@ -73,6 +82,12 @@ def makeCreateWindow(issues):
         [sg.Text(text="Genetic algorithm:", size=(10, 1), font=14), sg.Combo(["std", "b"], visible=False, enable_events=True, key="-GEN_ALG-")],
         [sg.Button(button_text="Create", key="-CREATE-"), sg.Button(button_text="Cancel", key="-CANCEL-")]]
     return sg.Window(title="Create Window", layout=layout, margins=(20, 20))
+
+def makeResultWindow():
+    layout = [
+        [sg.Canvas(size=(350, 350), key='-CANVAS-', pad=(20, 20))],
+        [sg.Button(button_text="Exit", key="-EXIT-")]]
+    return sg.Window(title="Result Window", layout=layout, margins=(20, 20))
 
 def expertWindowProcess():
     expertWindow = makeExpertWindow()
@@ -180,10 +195,31 @@ def createWindowProcess():
             print(url)
             resp = requests.post(url, cookies={"session_id": str(state.user.sessionID)})
             if resp.json()["meta"]["info"] == "OK":
-                break
+                createWindow.Hide()
+                resultWindowProcess(resp.json()["data"])
+                createWindow.UnHide()
             else:
                 print(resp.json()["meta"]["err"])
         print(event)
+
+def resultWindowProcess(res):
+    resultWindow = makeResultWindow()
+    canvasElem = resultWindow['-CANVAS-'].TKCanvas
+    x = list(range(len(res["best_scores"])))
+    bestScores = res["best_scores"]
+    avgScores = res["avg_scores"]
+
+    fig, ax = plt.subplots()
+    plt.plot(x, bestScores)
+    plt.plot(x, avgScores)
+    plt.grid(True)
+    plt.show()
+    while True:
+        event, value = resultWindow.read()
+        if event == "OK" or event == "-CANCEL-" or sg.WIN_CLOSED:
+            resultWindow.close()
+            print("Closing create window....")
+            break
 
 state = State(False, -1, "http://127.0.0.1:8080/")
 authWindow = makeAuthWindow()
