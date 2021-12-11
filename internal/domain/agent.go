@@ -16,9 +16,14 @@ func (a *Agent) Mutate(power float64) {
 	index := 0
 	for k, v := range a.Genocode {
 		if index == mutatedParamIndex {
-			cleanChange := rand.Float64() * 2 * power
-			vChange := v * (power - cleanChange)
-			a.Genocode[k] = v + vChange
+			change := rand.Float64() * 2 * power
+			a.Genocode[k] = v * change
+			if k == "rho" && a.Genocode[k] > 0.9999 {
+				a.Genocode[k] = 0.9999
+			}
+			if k == "quantity" && a.Genocode[k] < 1.0 {
+				a.Genocode[k] = 1.0
+			}
 			break
 		}
 		index = index + 1

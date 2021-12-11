@@ -205,7 +205,7 @@ func (bl *Bl) RunTask(task domain.Task) (result domain.Result, err error) {
 	//	{31, 29, 32, 6, 29, 2, 6, 23, 14, 45, 43, 33, 32, 7, 22, 31, 35, 28, 0, 48},
 	//	{19, 42, 46, 15, 19, 19, 14, 32, 32, 19, 35, 39, 44, 7, 48, 20, 14, 14, 28, 0}}
 
-	nn := 20
+	nn := 42
 	taskModel := make([][]int, nn, nn)
 	for i, _ := range taskModel {
 		taskModel[i] = make([]int, nn, nn)
@@ -241,7 +241,7 @@ func (bl *Bl) RunGenAlg(genAlg domain.GenAlg, solver domain.Solver, taskID int) 
 		AvgParams:  make(map[string][]float64),
 	}
 
-	agesCount := 30
+	agesCount := 100
 	var bestScore, avgScore float64
 	var bestParams, avgParams map[string]float64
 

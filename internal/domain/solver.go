@@ -53,14 +53,14 @@ func (s *AntSolver) Set(model interface{}) (err error) {
 func (s *AntSolver) Solve(params map[string]float64) (score float64, err error) {
 	L := s.Model
 	cities := len(L[0])
-	ages := 30
-	ants := 20
+	ages := 10
+	ants := 5
 
 	alpha := params["alpha"]
 	beta := params["beta"]
 	rho := params["rho"]
-	quantity := int(params["quantity"])
-	e := 2
+	quantity := params["quantity"]
+	e := 1
 	ph := float64(quantity) / float64(cities)
 
 	revMatrix := s.CalcRevMatrix(L)

@@ -210,10 +210,28 @@ def resultWindowProcess(res):
     avgScores = res["avg_scores"]
 
     fig, ax = plt.subplots()
-    plt.plot(x, bestScores)
-    plt.plot(x, avgScores)
-    plt.grid(True)
+    ax.plot(x, bestScores, label='score')
+    ax.plot(x, avgScores, label='avg score')
+    ax.legend()
+    ax.grid(True)
     plt.show()
+
+
+    avgAlpha = res["avg_params"]["alpha"]
+    avgBeta = res["avg_params"]["beta"]
+    avgQuantity = res["avg_params"]["quantity"]
+    avgRho = res["avg_params"]["rho"]
+
+    fig, ax = plt.subplots()
+    ax.plot(x,  avgAlpha, label='alpha')
+    ax.plot(x, avgBeta, label='beta')
+    ax.plot(x, avgQuantity, label='quantity')
+    ax.plot(x, avgRho, label='rho')
+    ax.legend()
+    ax.grid(True)
+    plt.show()
+
+
     while True:
         event, value = resultWindow.read()
         if event == "OK" or event == "-CANCEL-" or sg.WIN_CLOSED:
