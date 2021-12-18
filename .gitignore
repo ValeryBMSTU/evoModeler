@@ -4,6 +4,11 @@
 !/cmd/main.go
 !/db
 !/db/postgreDB.sql
+!/docs
+!/docs/rpz
+!/docs/rpz/*
+!/docs/rpz/pictures
+!/docs/rpz/pictures/*
 !/gui
 !/gui/gui.py
 !/internal
@@ -17,6 +22,9 @@
 !/internal/domain/*
 !/pkg
 !/pkg/pkg.go
+!/scrap
+!/scrap/ants.py
+!/scrap/pltExample.py
 !.gitignore
 !config.yaml
 !Dockerfile
