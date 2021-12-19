@@ -241,7 +241,7 @@ func (bl *Bl) RunGenAlg(genAlg domain.GenAlg, solver domain.Solver, taskID int) 
 		AvgParams:  make(map[string][]float64),
 	}
 
-	agesCount := 100
+	agesCount := 30
 	var bestScore, avgScore float64
 	var bestParams, avgParams map[string]float64
 
