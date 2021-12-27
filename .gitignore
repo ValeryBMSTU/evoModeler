@@ -1,7 +1,11 @@
 *
 
 !/cmd
-!/cmd/main.go
+!/cmd/*
+!/cmd/app
+!/cmd/app/main.go
+!/cmd/auth
+!/cmd/auth/main.go
 !/db
 !/db/postgreDB.sql
 !/docs
@@ -14,6 +18,8 @@
 !/internal
 !/internal/api
 !/internal/api/*
+!/internal/auth
+!/internal/auth/*
 !/internal/bl
 !/internal/bl/*
 !/internal/da
@@ -22,6 +28,8 @@
 !/internal/domain/*
 !/pkg
 !/pkg/pkg.go
+!/protos
+!/protos/auth.proto
 !/scrap
 !/scrap/ants.py
 !/scrap/pltExample.py

@@ -1,8 +1,10 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"github.com/ValeryBMSTU/evoModeler/internal/auth"
 	"net/http"
 	"strconv"
 
@@ -24,7 +26,9 @@ type BL interface {
 }
 
 type Api struct {
-	Bl BL
+	Bl                BL
+	auth              auth.AuthClient
+	authServiceEnable bool
 }
 
 type RespFormat struct {
@@ -143,7 +147,18 @@ func (api *Api) SingUpHandler(ctx echo.Context) (err error) {
 	login := ctx.QueryParam("login")
 	pass := ctx.QueryParam("pass")
 
-	sessionID, err := api.Bl.CreateUser(login, pass)
+	var sessionID int
+	if api.authServiceEnable {
+		request := &auth.CURequest{
+			Login: login,
+			Pass:  pass,
+		}
+		var resp *auth.CUResponse
+		resp, err = api.auth.CreateUser(context.Background(), request)
+		sessionID = int(resp.UserId)
+	} else {
+		sessionID, err = api.Bl.CreateUser(login, pass)
+	}
 	if err != nil {
 		return err
 	}
@@ -162,7 +177,18 @@ func (api *Api) LogInHandler(ctx echo.Context) (err error) {
 	login := ctx.QueryParam("login")
 	pass := ctx.QueryParam("pass")
 
-	sessionID, err := api.Bl.CreateSession(login, pass)
+	var sessionID int
+	if api.authServiceEnable {
+		request := &auth.CSRequest{
+			Login: login,
+			Pass:  pass,
+		}
+		var resp *auth.CSResponse
+		resp, err = api.auth.CreateSession(context.Background(), request)
+		sessionID = int(resp.SessionId)
+	} else {
+		sessionID, err = api.Bl.CreateSession(login, pass)
+	}
 	if err != nil {
 		return err
 	}
@@ -183,7 +209,16 @@ func (api *Api) LogOutHandler(ctx echo.Context) (err error) {
 		return err
 	}
 
-	err = api.Bl.RemoveSession(sessionID)
+	if api.authServiceEnable {
+		request := &auth.RSRequest{
+			SessionId: int64(sessionID),
+		}
+		//var resp *auth.RSResponse
+		_, err = api.auth.RemoveSession(context.Background(), request)
+		//err = (resp.SessionId)
+	} else {
+		err = api.Bl.RemoveSession(sessionID)
+	}
 	if err != nil {
 		return err
 	}
@@ -260,8 +295,8 @@ func (api *Api) GetIssuesHandler(ctx echo.Context) (err error) {
 	return ctx.JSON(http.StatusOK, resp)
 }
 
-func CreateApi(bl BL) (newApi *Api, err error) {
-	return &Api{bl}, nil
+func CreateApi(bl BL, auth auth.AuthClient, isAuthServiceEnable bool) (newApi *Api, err error) {
+	return &Api{bl, auth, isAuthServiceEnable}, nil
 }
 
 func CreateCustomMiddlewares(bl BL) (newMiddlewares *CustomMiddlewares, err error) {

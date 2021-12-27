@@ -3,8 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/ValeryBMSTU/evoModeler/internal/auth"
 	"github.com/ValeryBMSTU/evoModeler/internal/bl"
 	"github.com/ValeryBMSTU/evoModeler/internal/da"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/grpclog"
 	"log"
 	"net/http"
 	"os"
@@ -92,7 +95,31 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	serverApi, err := api.CreateApi(serverBl)
+
+	opts := []grpc.DialOption{
+		grpc.WithInsecure(),
+	}
+	conn, err := grpc.Dial("127.0.0.1:5301", opts...)
+
+	if err != nil {
+		grpclog.Fatalf("fail to dial: %v", err)
+	}
+
+	defer conn.Close()
+
+	authClient := auth.NewAuthClient(conn)
+	//request := &auth.Request{
+	//	Message: args[1],
+	//}
+	//response, err := client.Do(context.Background(), request)
+	//
+	//if err != nil {
+	//	grpclog.Fatalf("fail to dial: %v", err)
+	//}
+	//
+	//fmt.Println(response.Message)
+
+	serverApi, err := api.CreateApi(serverBl, authClient, true)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,0 +1,38 @@
+
+syntax = "proto3";
+
+option go_package = "github.com/ValeryBMSTU/evoModeler/internal/auth_service";
+
+package auth_service;
+
+service Auth {
+  rpc CreateUser(CURequest) returns (CUResponse) {}
+  rpc CreateSession(CSRequest) returns (CSResponse) {}
+  rpc RemoveSession(RSRequest) returns (RSResponse) {}
+}
+
+message CURequest {
+  string login = 1;
+  string pass = 2;
+}
+
+message CUResponse {
+  int64 user_id = 1;
+}
+
+message CSRequest {
+  string login = 1;
+  string pass = 2;
+}
+
+message CSResponse {
+  int64 session_id = 1;
+}
+
+message RSRequest {
+  int64 session_id = 1;
+}
+
+message RSResponse {
+  bool is_err = 1;
+}
